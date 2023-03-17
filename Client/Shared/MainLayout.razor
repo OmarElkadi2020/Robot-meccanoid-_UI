@@ -1,0 +1,89 @@
+﻿@inherits LayoutComponentBase
+@inject IMatToaster Toaster
+
+    <style>
+        @@media (min-width: 900px) {
+            .Drawer {
+                animation-name: @IsSideBarVisable;
+                animation-duration: 1s;
+                animation-fill-mode: both;
+                overflow: hidden;
+            }
+        }
+        @@keyframes Toggle-Close{
+            from {
+                width: 250px;
+            }
+            to {
+                width: 0px;
+            }
+        }
+
+
+        @@keyframes Toggle-Open {
+            from {
+                width: 0px;
+            }
+
+            to {
+                width: 250px;
+            }
+            }
+    </style>
+
+
+    <div class="sidebar Drawer @IsSideBarVisable">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="top-row px-4 auth">
+            <div>
+                <button class="btn" @onclick="@((e) => ButtonClicked())"><i class="fas fa-bars colored-icon"></i></button>
+            </div>
+        </div>
+
+        <div class="content px-4">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between flex-wrap">
+                    <div class="Vol-Container -2">
+                        <Volume />
+                    </div>
+                    <div class="MeccaPic-container">
+                        <MeccaPic />
+                    </div>
+                    <div class="Battery-Container">
+                        <Battery />
+                    </div>
+                </div>
+                <div>
+                    @Body
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <MatToastContainer />
+
+
+    @code
+{
+        bool Opened = true;
+
+        string IsSideBarVisable => (Opened ? "Toggle-Open" : "Toggle-Close");
+
+        protected override void OnInitialized()
+        {
+            Toaster.Configuration.Position = (MatToastPosition)Enum.Parse(typeof(MatToastPosition), "2");
+            Toaster.Configuration.MaxDisplayedToasts = Convert.ToInt32(3);
+        }
+
+        void ButtonClicked()
+        {
+            Opened = !Opened;
+        }
+
+
+
+    }

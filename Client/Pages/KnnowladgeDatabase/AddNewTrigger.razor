@@ -1,0 +1,29 @@
+﻿@using MatBlazor
+<style>
+</style>
+
+<MatTooltip Tooltip="Add New Trigger" Wrap="true"  Position="@MatTooltipPosition.Top">
+    <button class="invisable-button btn" @onclick="OpenDialog"><i class="oi oi-plus colored-icon oi-align-center" /></button>
+</MatTooltip>
+<TriggerDialog dialogIsOpen="DialogIsOpen" trigger="@(new Trigger())"
+               Call_ReInitializeKnowladgeDataBase_From_AddNewTrigger="@CallReInitializeFromKnowladgeDataBase" CloseNewTriggerDialoag="@CloseDialog" />
+
+
+@code
+{
+
+    [Parameter]
+    public EventCallback<Trigger> CallReInitializeFromKnowladgeDataBase { set; get; }
+
+    private bool DialogIsOpen { set; get; } = false;
+
+    void OpenDialog()
+    {
+        DialogIsOpen = true;
+    }
+    void CloseDialog()
+    {
+        DialogIsOpen = false;
+    }
+
+}

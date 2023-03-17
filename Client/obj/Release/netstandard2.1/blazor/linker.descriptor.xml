@@ -1,0 +1,5 @@
+﻿<linker>
+  <assembly fullname="MeccaUI_THDxIOT.Client">
+    <type fullname="*" required="true" />
+  </assembly>
+</linker>

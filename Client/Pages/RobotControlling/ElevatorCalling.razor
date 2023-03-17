@@ -1,0 +1,135 @@
+﻿@page "/elevator"
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<style>
+    .w-48{
+        width:48%;
+    }
+    .w-99{
+        width:99%;
+    }
+</style>
+<MatCard Class="w-auto d-block">
+
+
+    <MatCardContent>
+        @if (ConnectionFlag == 1)
+        {
+            <div class="ring-container">
+                <div class="ringring"></div>
+                <div class="ring-circle"></div>
+            </div>
+        }
+
+        <MatCardMedia Wide="true" Class="m-2" ImageUrl="https://export.vileda-professional.com/medias/iStock-153576278-room.jpg?context=bWFzdGVyfHJvb3R8NzQxMjgwfGltYWdlL2pwZWd8aDBjL2gyZS84Nzk2MzI0NDk1MzkwLmpwZ3xlNzljZGQ3NjRjMDFlMjQzYmQ2Y2NlZDYzYTRiNzc1NDNlMWI3YWFiOTc2NzZjMzdjNGY0ZWM0MDNmZWFiZTNi">
+            @{
+                if (RealRobotState == 0 || ConnectionFlag == 0 )
+                {
+                    <MatHeadline6 Class="text-center">This Service is offline now</MatHeadline6>
+                }
+                else if (RealRobotState == 2)
+                {
+                    <MatHeadline6 Class="text-center">Mecca hear</MatHeadline6>
+                }
+                else if (RealRobotState == 3)
+                {
+                    <MatHeadline6 Class="text-center">Mecca is going to bring the elevator </MatHeadline6>
+                }
+                else if (RealRobotState == 4)
+                {
+                    <MatHeadline6 Class="text-center">Mecca can not go now try again later </MatHeadline6>
+                }
+                else if (RealRobotState == 5)
+                {
+                    <MatHeadline6 Class="text-center">Mecca called the elevator</MatHeadline6>
+                }
+                else if (RealRobotState == 6)
+                {
+                    <MatHeadline6 Class="text-center">The Elevator came already</MatHeadline6>
+                }
+
+            }
+        </MatCardMedia>
+    </MatCardContent>
+
+    <div class="demo-mat-card-content">
+        Robot state = @RealRobotState,
+        User state = @UserState
+    </div>
+    <div class="d-flex justify-content-between">
+        <button @onclick="CallTheElevator" class="btn w-48 m-1 ">Bring it</button>
+        <button @onclick="reset" class="btn w-48 m-1 ">reset</button>
+    </div>
+    <div class="text-center">
+        <button @onclick="connectRobot" class="btn m-1 w-99">Reconnect</button>
+    </div>
+
+</MatCard>
+
+@code {
+
+    private HubConnection _hubConnection;
+
+    private int RealRobotState { set; get; } = 0; //0 = not connected ,1 = online ,2 = hear, 3 = going ,4 = can not go , 5 = mecca called the elev 
+    private int WantedRobotState { set; get; } = 0; //0 = not connected ,1 = online ,2 = hear, 3 = going ,4 = can not go , 5 = mecca called the elev 
+    private int UserState { set; get; } = 1;//0 = not connected ,1 = want to connect ,2 = connected, 3 = order sended, 4= wait , 5 = try again later,6 = should come.
+    private int ConnectionFlag { set; get; } = 0;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        _hubConnection = new HubConnectionBuilder()
+    .WithUrl(NavigationManager.ToAbsoluteUri("/MainHub"))
+     .Build();
+
+        _hubConnection.On <int, int, int> ("ReciveFromElevatorTunnnel", (RecRobotState, RecUserState , RecConnectionFlag) =>
+        {
+            RealRobotState = RecRobotState;
+            UserState = RecUserState;
+            ConnectionFlag = RecConnectionFlag;
+
+            StateHasChanged();
+        }
+        );
+
+        await _hubConnection.StartAsync();
+
+        await connectRobot();
+    }
+
+
+    private async Task connectRobot()
+    {
+        ConnectionFlag = 0;
+        await _hubConnection.SendAsync("SendToElevatorTunnnel", WantedRobotState, UserState, ConnectionFlag); // to the robot iam onilne and want to connect
+        StateHasChanged();
+    }
+
+    private async Task CallTheElevator()
+    {
+
+        if (RealRobotState == 2) {
+            UserState = 3;
+            WantedRobotState = 3;
+            await _hubConnection.SendAsync("SendToElevatorTunnnel", WantedRobotState, UserState, ConnectionFlag);
+        }
+    }
+    private async Task reset()
+    {
+        ConnectionFlag = 2;
+        await _hubConnection.SendAsync("SendToElevatorTunnnel", WantedRobotState, UserState, ConnectionFlag);
+        ConnectionFlag = 0; //let we let that the robot gonne offline
+
+    }
+
+
+
+
+    public bool IsConnected =>
+    _hubConnection.State == HubConnectionState.Connected;
+
+
+
+}

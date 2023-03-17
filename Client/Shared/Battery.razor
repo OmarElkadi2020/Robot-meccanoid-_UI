@@ -1,0 +1,94 @@
+﻿
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<div>
+    @if (bIsCharing)
+    {
+        <i class="oi oi-bolt text-success"></i>
+    }
+
+    <div class="battery">
+        <div class="battery-level @(BatteryLevel <= 25 ? "low" : BatteryLevel <= 80 ? "medium" :"high" )"
+             style="width: @( BatteryLevel <=100 ? BatteryLevel : 0 )%">
+            @BatteryLevel%
+        </div>
+    </div> <!--Battery-->
+
+
+</div>
+
+
+@code {
+
+
+
+    private async Task ChargeAsync()
+    {
+        bIsCharing = true;
+
+        if (BatteryLevel >= 99)
+        {
+            bIsCharing = false;
+            BatteryLevel = 100;
+        }
+        else
+        {
+            await Task.Delay(50);
+            BatteryLevel++;
+            StateHasChanged();
+            await ChargeAsync();
+        }
+
+    }
+
+    private async Task DisChargingAsync()
+    {
+        bIsCharing = false;
+
+        if (BatteryLevel <= 0)
+        {
+            BatteryLevel = 0;
+
+        }
+        else
+        {
+            await Task.Delay(50);
+            BatteryLevel--;
+            StateHasChanged();
+            await DisChargingAsync();
+        }
+    }
+
+
+    public int BatteryLevel { get; set; }
+    private bool bIsCharing;
+
+    private HubConnection _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+     
+            ChargeRecord chargeRecord = await Http.GetFromJsonAsync<ChargeRecord>("api/ChargeRecords");
+            BatteryLevel = chargeRecord.ChargeLevel;
+            bIsCharing = chargeRecord.IsCharging;
+
+
+
+        _hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/MainHub"))
+                 .Build();
+
+        _hubConnection.On<bool, int>("ReceiveChargeRec", (RecivedIsCharging, RecivedChargeLevel) =>
+        {
+
+            BatteryLevel = RecivedChargeLevel;
+            bIsCharing = RecivedIsCharging;
+            StateHasChanged();
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+
+}

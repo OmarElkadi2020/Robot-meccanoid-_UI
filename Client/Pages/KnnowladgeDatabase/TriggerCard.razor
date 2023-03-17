@@ -1,0 +1,198 @@
+﻿@using MatBlazor
+@inject HttpClient Http
+@inject IMatToaster Toaster
+@inject NavigationManager NavigationManager
+
+<MatCard class="demo-mat-card">
+
+
+    <div class="text-center">
+        <button class="btn w-100 leave" type="reset"><span class=" w-100 bold-with-shadow">@trigger.TriggerName</span></button>
+    </div>
+
+    <MatCardContent Class="CardContent">
+
+        <MatTabGroup @bind-ActiveIndex="@tabIndex">
+
+            <MatTab Label="Trigger" >
+
+                <EditForm Model="trigger" OnValidSubmit="@Save">
+                    <DataAnnotationsValidator />
+                    <!--Inpust-->
+
+                    <div class="mat-layout-grid container">
+                        <div class="mat-layout-grid-inner bg-inhert">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                                <MatTextField Label="Trigger Name" @bind-Value="@trigger.TriggerName" FullWidth="true" Required="true" Dense="true" />
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                                <MatSelectItem Label="Sense-Trigger" @bind-Value="@trigger.SenseTrigger" Items="TriggerSenses" />
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                                <MatTextField Label="Text-Audio-Trigger" @bind-Value="@trigger.AudioTextTrigger"
+                                              TextArea="true" FullWidth="true"
+                                              Required="@(string.IsNullOrEmpty(trigger.SenseTrigger) ? true : false)"
+                                              HelperText=@validation_massage HelperTextValidation="true"  Box="true" Outlined="true"/>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12 d-flex justify-content-around">
+                                <button Class="btn " Type="submit">Save</button>
+                                <button class="btn" type="button" @onclick="@Delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </MatTab>
+
+           
+            <MatTab Label="Reactions">
+                
+                <div class="row mw-100 justify-content-center m-0">
+                    <div class="col-6">
+                        <NavLink href="@navlink" >
+                            <button class="btn m-2 text-center" name="Edit"
+                                    @onclick="@(()=>Show("Click on the Reaction Name To Attach it on this Trigger",MatToastType.Link,"Select","attachment"))">
+                                Add Reaction
+                            </button>
+                        </NavLink>
+                    </div>
+                    <div class="col-6 d-flex align-self-center justify-content-center" >
+                        <MatSlideToggle  @bind-Value="@EnableReactionRemoving"></MatSlideToggle>
+                    </div>
+
+                    <div class="col-10 justify-content-center mx-0 mt-2 mb-4 pt-2 border-top border-dark">
+                        <div class="row m-0 ">
+                            @foreach (var ThisTiggerReaction in ThisTriggerReactions)
+                            { 
+                            <div class="col-12 text-center p-3">
+                                <button class="btn hover-me btn-full-width d-block w-100" type="button" @onclick="@(()=>NavigationManager.NavigateTo($"ReactionBuilder/{ThisTiggerReaction.ReactionID}"))">
+                                    <span class="w-100 bold-with-shadow m-0 p-0"> @ThisTiggerReaction.ReactionName</span>
+                                </button>
+                                <button  class="btn hover-show" @onclick="@(()=> DeattachReaction(ThisTiggerReaction.ReactionID))" ><i class="fa fa-trash colored-icon"></i></button>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </MatTab>
+
+         </MatTabGroup>
+</MatCardContent>
+</MatCard>
+
+@code{
+
+
+    private string validation_massage = "One Of The Trigger Types must be filled";
+
+    public int tabIndex { set; get; } = 0;
+
+    public bool EnableReactionRemoving { set; get; } = false;
+
+    [Parameter]
+    public Trigger trigger { set; get; }
+
+    private string navlink { set; get; }
+
+    public List<Reaction> ThisTriggerReactions { set; get; }
+
+    [Parameter]
+    public EventCallback<Trigger> DeleteThisTrigger { get; set; }
+
+
+    string[] TriggerSenses = new[]
+    {
+        "Head Swapping",
+        "Shoulder Swapping",
+        "Hand Shaking",
+        null,
+    };
+
+    protected override void OnInitialized()
+    {
+        navlink = $"Reactions/{trigger.TriggerID}";
+
+            ThisTriggerReactions = new List<Reaction>();
+            ThisTriggerReactions =  trigger.TriggersReactions.Select(tr => tr.Reaction).ToList();
+        
+       
+    }
+
+    private async Task Save()
+    {
+
+        if (!string.IsNullOrEmpty(trigger.SenseTrigger) && string.IsNullOrEmpty(trigger.AudioTextTrigger))
+        {
+            trigger.TriggerType = "Sensory";
+        }
+        else if (!string.IsNullOrEmpty(trigger.AudioTextTrigger) && string.IsNullOrEmpty(trigger.SenseTrigger))
+        {
+            trigger.TriggerType = "Auditory";
+        }
+        else if (!(string.IsNullOrEmpty(trigger.AudioTextTrigger) || string.IsNullOrEmpty(trigger.SenseTrigger)))
+        {
+            trigger.TriggerType = "Mixed";
+        }
+        else
+        {
+            trigger.TriggerType = null;
+        }
+
+
+            if (trigger.TriggerID != 0) //Edit
+            {
+                var ID = trigger.TriggerID;
+                var res = await Http.PutAsJsonAsync($"api/Triggers/{ID}", trigger);
+                if (res.IsSuccessStatusCode) Show($"The Trigger \"{trigger.TriggerName}\" has been updated Sucssfully", MatToastType.Info,"Successed" , "edit");
+            }
+
+    }
+
+    private async Task Delete()
+    {
+
+
+            var ID = trigger.TriggerID;
+            var res= await Http.DeleteAsync($"api/Triggers/{ID}");
+            await DeleteThisTrigger.InvokeAsync(trigger);
+
+            if (res.IsSuccessStatusCode)
+                Show($"The Trigger \"{trigger.TriggerName}\" has been deleted Successfully", MatToastType.Danger, "Deleted", "delete_sweep");
+
+        
+    }
+
+    private async Task DeattachReaction(long ReactionID)
+    {
+        if (EnableReactionRemoving) {
+            var res = await Http.DeleteAsync($"api/TriggersReactions/Trigger/{trigger.TriggerID}/Reaction/{ReactionID}");
+
+            if (res.IsSuccessStatusCode)
+                Show("The Reaction is deattached", MatToastType.Link, "delete", "add_circle_outline");
+            trigger.TriggersReactions.RemoveAll(R => R.ReactionID == ReactionID);
+            OnInitialized();
+        }
+        else
+        {
+            Show("Enable Deleting from The Toggle silder then double Click to delete", MatToastType.Info, "Wrong Input!", "error_outline");
+
+        }
+    }
+
+    public void Show(string message, MatToastType type,string title, string icon = "")
+    {
+        Toaster.Add( message , type, title, icon, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+            config.MaximumOpacity = Convert.ToInt32(100);
+
+            config.ShowTransitionDuration = Convert.ToInt32(500);
+            config.VisibleStateDuration = Convert.ToInt32(10000);
+            config.HideTransitionDuration = Convert.ToInt32(500);
+
+            config.RequireInteraction = false;
+
+
+        });
+    }
+    }

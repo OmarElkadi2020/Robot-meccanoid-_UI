@@ -1,0 +1,129 @@
+﻿@using MatBlazor
+@inject HttpClient  Http
+@inject IMatToaster Toaster
+
+
+<MatDialog @bind-IsOpen="@dialogIsOpen">
+
+
+
+    <MatDialogTitle>Add New Trigger Here</MatDialogTitle>
+    <MatDialogContent>
+            
+                <EditForm Model="trigger" OnValidSubmit="@Save">
+                    <DataAnnotationsValidator />
+                    <!--Inputs-->
+
+                    <div class="mat-layout-grid container">
+                        <div class="mat-layout-grid-inner">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatTextField Label="Trigger Name" @bind-Value="@trigger.TriggerName" FullWidth="true" Required="true" />
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6 ">
+                                <MatTextField Label="Type" @bind-Value="@trigger.TriggerType" Disabled="true" />
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatSelectItem Label="Sense-Trigger" Outlined="false" @bind-Value="@trigger.SenseTrigger" Items="TriggerSenses" />
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatTextField Label="Text-Audio-Trigger" @bind-Value="@trigger.AudioTextTrigger"
+                                              TextArea="true" FullWidth="true" Outlined="true"
+                                              Required="@(string.IsNullOrEmpty(trigger.SenseTrigger) ? true:false)"
+                                              HelperText=@validation_massage HelperTextValidation="true" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12 d-flex justify-content-around">
+                        <button Class="btn btn-outline-primary" Type="submit">Create</button>
+                        <button class="btn" type="button" @onclick="@CloseNewTriggerDialoag">Cancel</button>
+                    </div>
+
+                </EditForm>
+    
+    </MatDialogContent>
+</MatDialog>
+
+
+
+@code{
+
+    [Parameter]
+    public Trigger trigger { set; get; }
+
+    [Parameter]
+    public bool dialogIsOpen { set; get; } = false;
+
+    [Parameter]
+    public EventCallback<Trigger> Call_ReInitializeKnowladgeDataBase_From_AddNewTrigger { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> CloseNewTriggerDialoag { get; set; }
+
+    private string validation_massage = "One Of The Trigger Types must be filled";
+
+    public int tabIndex = 0;
+
+
+
+    string[] TriggerSenses = new[]
+    {
+        "Head Swapping",
+        "Shoulder Swapping",
+        "Hand Shaking",
+        null,
+    };
+
+    private async Task Save()
+    {
+
+        if (!string.IsNullOrEmpty(trigger.SenseTrigger) && string.IsNullOrEmpty(trigger.AudioTextTrigger))
+        {
+            trigger.TriggerType = "Sensory";
+        }
+        else if (!string.IsNullOrEmpty(trigger.AudioTextTrigger) && string.IsNullOrEmpty(trigger.SenseTrigger))
+        {
+            trigger.TriggerType = "Auditory";
+        }
+        else if (!(string.IsNullOrEmpty(trigger.AudioTextTrigger) || string.IsNullOrEmpty(trigger.SenseTrigger)))
+        {
+            trigger.TriggerType = "Mixed";
+        }
+        else
+        {
+            trigger.TriggerType = null;
+        }
+
+
+            if (trigger.TriggerID == 0) //new
+            {
+                var res = await Http.PostAsJsonAsync($"api/Triggers", trigger);
+
+                if (res.IsSuccessStatusCode)
+                    Show($"New Trigger \"{trigger.TriggerName}\" has been created Successfully", MatToastType.Success, "Successed", "thumb_up");
+
+                await Call_ReInitializeKnowladgeDataBase_From_AddNewTrigger.InvokeAsync(trigger);
+            }
+
+
+        dialogIsOpen = false;
+        await CloseNewTriggerDialoag.InvokeAsync(new MouseEventArgs());
+    }
+
+
+    public void Show(string message, MatToastType type, string title, string icon = "")
+    {
+        Toaster.Add(message, type, title, icon, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+            config.MaximumOpacity = Convert.ToInt32(100);
+
+            config.ShowTransitionDuration = Convert.ToInt32(500);
+            config.VisibleStateDuration = Convert.ToInt32(10000);
+            config.HideTransitionDuration = Convert.ToInt32(500);
+
+            config.RequireInteraction = false;
+
+        });
+    }
+}

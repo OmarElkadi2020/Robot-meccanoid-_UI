@@ -1,0 +1,119 @@
+﻿@using System.Security.Claims;
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+
+<div>
+
+    <div class="tooltipx">
+        <small><a @onclick="Show" type="button" class="btn btn-outline-success p-0 small-btn"><i class="oi oi-eye p-0"></i></a></small>
+        <small class="tooltiptext">Show History!</small>
+    </div>
+    <div class="Vol d-inline-block">
+        <div class="Vol-level @(VolumeLevel * 10 <= 25 ? "low" : VolumeLevel * 10 <= 75 ? "medium" : "high" )"
+             style="width: @( VolumeLevel * 10 <= 100 ? VolumeLevel * 10 : 0 )%">
+            @(VolumeLevel * 10)%
+        </div>
+    </div>
+    <div class="tooltipx">
+        <small><a @onclick="Send" type="submit" class="btn btn-outline-success p-0 small-btn"><i class="oi oi-share p-0"></i></a></small>
+        <small class="tooltiptext">Share it!</small>
+    </div>
+    <div>
+        <small><a @onclick="volDown" type="submit" class="btn btn-outline-success p-0 small-btn"><i class="oi oi-volume-low p-0"></i></a></small>
+        <input type="range" min="0" max="10" class="Slider" name="volume" @bind="VolumeLevel" />
+        <small><a @onclick="volUp" type="submit" class="btn btn-outline-success p-0 small-btn"><i class="oi oi-volume-high p-0"></i></a></small>
+    </div>
+</div>
+
+<MatDialog @bind-IsOpen="IsHistoryVisable">
+
+    <MatDialogTitle>Volume History</MatDialogTitle>
+
+    <MatDialogContent>
+        @if (_VolumeLevels == null)
+        {
+            <p>No VolumeLevel have been sent or recived</p>
+        }
+        <p>
+            <ol id="messagesList" class="list-unstyled">
+
+                @foreach (var entry in _VolumeLevels)
+                {
+                    <li>
+                        @entry.Key : Volume =  @entry.Value <span class="text-success"><i class="oi oi-check"></i> </span>
+                    </li>
+                }
+
+            </ol>
+        </p>
+    </MatDialogContent>
+
+    <MatDialogActions>
+        <div>
+            <button class="btn btn-secondary" type="button" @onclick="Hide">Hide</button>
+        </div>
+    </MatDialogActions>
+</MatDialog>
+
+@code {
+
+    private HubConnection _hubConnection;
+    private List<KeyValuePair<string, int>> _VolumeLevels = new List<KeyValuePair<string, int>>();
+
+    private int VolumeLevel { get; set; }
+    private bool IsHistoryVisable { set; get; } = false;
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        VolumeRecord volumeRecord = await Http.GetFromJsonAsync<VolumeRecord>("api/VolumeRecords");
+        VolumeLevel = volumeRecord.VolumeLevel;
+
+
+
+        _hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/MainHub"))
+                 .Build();
+
+        _hubConnection.On<string, int>("ReciveVolRec", (RecivedUserName, RecivedVolumeLevel) =>
+        {
+            VolumeLevel = RecivedVolumeLevel;
+            StateHasChanged();
+
+            var UserNameVolumeLevel = new KeyValuePair<string, int>(RecivedUserName, RecivedVolumeLevel);
+            _VolumeLevels.Add(UserNameVolumeLevel);
+        });
+
+        await _hubConnection.StartAsync();
+
+    }
+
+
+    private async Task Send()
+    {
+        StateHasChanged();
+        VolumeRecord volumeRecord = new VolumeRecord();
+        volumeRecord.VolumeLevel = VolumeLevel;
+
+        await Http.PostAsJsonAsync("api/VolumeRecords", volumeRecord);
+    }
+
+
+
+
+    public bool IsConnected =>
+    _hubConnection.State == HubConnectionState.Connected;
+
+
+    private void Show() => IsHistoryVisable = true;
+    private void Hide() => IsHistoryVisable = false;
+
+    private void volUp() { if (VolumeLevel < 10) ++VolumeLevel; }
+    private void volDown() { if (VolumeLevel > 0) --VolumeLevel; }
+}

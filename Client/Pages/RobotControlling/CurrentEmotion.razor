@@ -1,0 +1,141 @@
+﻿@page "/Emotion"
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+    <MatCard Class="w-auto">
+
+        <MatCardContent>
+            @if (ConnectionFlag == 1)
+            {
+                <div class="ring-container">
+                    <div class="ringring"></div>
+                    <div class="ring-circle"></div>
+                </div>
+            }
+
+            @{
+                if (RealCurrentEmoCondition.Equals(MeccaEmoCondition.Unknown))
+                {
+                    <MatCardMedia Wide="true" Class="m-2" ImageUrl="imgs/dontknow.png">
+                    </MatCardMedia>
+                }
+                else if (RealCurrentEmoCondition.Equals(MeccaEmoCondition.happy))
+                {
+                    <MatCardMedia Wide="true" Class="m-2" ImageUrl="imgs/happy.jpg">
+
+                        <MatHeadline6 Class="text-center">Mecca is happy</MatHeadline6>
+                    </MatCardMedia>
+
+                }
+                else if (RealCurrentEmoCondition.Equals(MeccaEmoCondition.sad))
+                {
+                    <MatCardMedia Wide="true" Class="m-2" ImageUrl="imgs/sad.jpg">
+
+                        <MatHeadline6 Class="text-center">Mecca is sad</MatHeadline6>
+                    </MatCardMedia>
+
+                }
+                else
+                {
+                    <MatCardMedia Wide="true" Class="m-2" ImageUrl="imgs/Angry.jpg">
+                        <MatHeadline6 Class="text-center">Mecca is angry</MatHeadline6>
+                    </MatCardMedia>
+
+                }
+
+            }
+            <MatSelectItem @bind-Value="WantedCurrentEmoCondition" Items="@CurrentEmoConditions">
+            </MatSelectItem>
+
+        </MatCardContent>
+
+        
+
+                <button @onclick="ChangeCurrentEmoCondition" class="btn d-block text-center w-100 m-1" >Apply</button>
+                <button @onclick="Reconnect" class="btn d-block text-center w-100 m-1">Reconnect</button>
+
+
+        
+
+    </MatCard>
+
+@code {
+
+    private HubConnection _hubConnection;
+
+    private MeccaEmoCondition WantedCurrentEmoCondition { get; set; }
+    private MeccaEmoCondition RealCurrentEmoCondition { get; set; } = MeccaEmoCondition.Unknown;
+
+    private int controlFlag { get; set; } = 0;//1= User Want to connect , 2 = Robot hear , 3 = User enable to Change The Current EmoCondition
+    private int ConnectionFlag { get; set; } = 0;//1= User Want to connect , 2 = Robot hear , 3 = User enable to Change The Current EmoCondition
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+
+        _hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/MainHub"))
+        .Build();
+
+        _hubConnection.On<int,int,int>("ReciveFromEmotionsTunnel", (RecCurrentEmoCondition, RecControlFlag , RecConnectionFlag) =>
+        {
+            RealCurrentEmoCondition = (MeccaEmoCondition)RecCurrentEmoCondition; //casting int to enum
+            WantedCurrentEmoCondition = RealCurrentEmoCondition;
+            controlFlag = RecControlFlag;
+            ConnectionFlag = RecConnectionFlag;
+            StateHasChanged();
+        }
+        );
+
+        await _hubConnection.StartAsync();
+
+
+        if (controlFlag == 0)
+        {
+            controlFlag = 1;
+            ConnectionFlag = 0;
+            await _hubConnection.SendAsync("SendToEmotionsTunnel", (int)MeccaEmoCondition.Unknown, controlFlag , ConnectionFlag); // to the robot iam onilne and want to connect we send num 0 and flag = 1 if the Robot hears will answer with flag =2
+
+        }
+
+    }
+
+    /// <summary>
+    /// MeccaEmoCondition enum happy =0 , sad =1, Angry =2 
+    /// </summary>
+
+    private async Task ChangeCurrentEmoCondition()
+    {
+        if (controlFlag == 2) {
+            controlFlag = 3;
+            await _hubConnection.SendAsync("SendToEmotionsTunnel", (int)WantedCurrentEmoCondition, controlFlag , ConnectionFlag); // here we send the desired Emotion to set , Flag 3 Enable Changes from users
+        }
+    }
+    private async Task Reconnect()
+    {
+
+        controlFlag = 1;
+        ConnectionFlag = 0;
+        await _hubConnection.SendAsync("SendToEmotionsTunnel", (int)MeccaEmoCondition.Unknown, controlFlag, ConnectionFlag); // to the robot iam onilne and want to connect we send num 0 and flag = 1 if the Robot hears will answer with flag =2
+    }
+
+
+
+
+
+
+    public bool IsConnected =>
+_hubConnection.State == HubConnectionState.Connected;
+
+
+
+}
+
+
+
+@code
+{
+    MeccaEmoCondition[] CurrentEmoConditions = Enum.GetValues(typeof(MeccaEmoCondition)).Cast<MeccaEmoCondition>().ToArray();
+
+}

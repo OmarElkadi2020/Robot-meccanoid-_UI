@@ -1,0 +1,120 @@
+﻿@using MatBlazor
+@inject HttpClient Http
+@inject IMatToaster Toaster
+@inject NavigationManager NavigationManager
+
+<MatCard Class="demo-mat-card">
+
+    <div class="mh-100">
+        <button @onclick="@AddMeToTrigger" class="btn w-100 leave " type="button"> <span class="w-100 bold-with-shadow"> @reaction.ReactionName</span></button>
+    </div>
+
+    <MatCardContent Class="ReactionCardBody ">
+        <EditForm Model="reaction" OnValidSubmit="@(() => save("has been updated Successfully"))">
+            @*<MatCardMedia Wide="true" ImageUrl="https://material-components.github.io/material-components-web-catalog/static/media/photos/3x2/2.jpg"></MatCardMedia>*@
+            <!--Inputs-->
+            <div class="row">
+                <div class="my-2 col-12">
+                    <MatTextField Label="Reaction Name"  @bind-Value="reaction.ReactionName" Class="bg-inhert" FullWidth="true"></MatTextField>
+                </div>
+
+                <div class="my-2 col-12 ">
+                    <MatSelectItem Label="Emotional Condition"  @bind-Value="reaction.EmotionalCondition" Items="EmotionalCondition" Class="bg-inhert" Enhanced="true"></MatSelectItem>
+                </div>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12 d-flex justify-content-between">
+                <button class="btn m-2" name="Delete" type="button" @onclick="@Delete" style="width:100px">Delete </button>
+                <NavLink href="@navlink">
+                    <button class="btn m-2 btn-full-width" name="Edit" style="width:100px">Show</button>
+                </NavLink>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12 d-flex justify-content-center">
+                <button class="btn m-2" name="save" type="submit" style="width:100px">save </button>
+            </div>
+        </EditForm>
+    </MatCardContent>
+</MatCard>
+
+@*<ReactionDialog dialogIsOpen="DialogIsOpen" reaction="reaction"
+    CardIsChanged="StateHasChanged" CloseNewReactionDialog="CloseDialog" />*@
+
+@code
+{
+    [Parameter]
+    public Reaction reaction { get; set; }
+
+    [Parameter]
+    public long TriggerID { get; set; }
+
+    private string navlink { get; set; }
+
+    [Parameter]
+    public EventCallback<Reaction> Call_ReInitialize_From_ReacionCardPanel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        navlink = $"ReactionBuilder/{reaction.ReactionID}";
+
+    }
+
+    private async Task Delete()
+    {
+
+
+            var ID = reaction.ReactionID;
+            var res = await Http.DeleteAsync($"api/Reactions/{ID}");
+            if (res.IsSuccessStatusCode)
+                Show($"The Reaction \"{reaction.ReactionName}\" has been deleted Successfully", MatToastType.Danger, "Deleted", "delete_sweep");
+            await Call_ReInitialize_From_ReacionCardPanel.InvokeAsync(reaction);
+
+       
+    }
+    async Task save(string TextForToaster)
+    {
+        if (reaction.ReactionID != 0) //Edit
+        {
+            var ID = reaction.ReactionID;
+            var res = await Http.PutAsJsonAsync($"api/Reactions/{ID}", reaction);
+            if (res.IsSuccessStatusCode)
+                Toaster.Add($"The Reaction \"{reaction.ReactionName}\""+TextForToaster , MatToastType.Info, "Successed", "thumb_up");
+        }
+    }
+    async Task AddMeToTrigger()
+    {
+        if (TriggerID != 0)
+        {
+            var TR =new TriggersReactions(TriggerID, reaction.ReactionID);
+            var res = await Http.PostAsJsonAsync($"api/TriggersReactions", TR);
+            if (res.IsSuccessStatusCode)
+                Toaster.Add($"The Reaction \"{reaction.ReactionName}\"" + " is Added To The Trigger Successfully", MatToastType.Info, "Successed", "thumb_up");
+            NavigationManager.NavigateTo("KnowladgeDataBase");
+        }
+    }
+    public void Show(string message, MatToastType type, string title, string icon = "")
+    {
+        Toaster.Add(message, type, title, icon, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+            config.MaximumOpacity = Convert.ToInt32(100);
+
+            config.ShowTransitionDuration = Convert.ToInt32(500);
+            config.VisibleStateDuration = Convert.ToInt32(10000);
+            config.HideTransitionDuration = Convert.ToInt32(500);
+
+            config.RequireInteraction = false;
+
+        });
+    }
+}
+
+@code{
+
+string[] EmotionalCondition = new[]
+{
+            "Happy",
+            "Sad",
+            "none",
+        };
+
+}

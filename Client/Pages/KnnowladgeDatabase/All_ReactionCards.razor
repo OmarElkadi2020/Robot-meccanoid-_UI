@@ -1,0 +1,81 @@
+﻿@page "/Reactions"
+@page "/Reactions/{TriggerID:long}"
+
+@using MatBlazor
+@inject HttpClient Http
+
+<style>
+    .ReactionCardBody {
+        display: @(IsCardBodyVisable ? "block" : "none" );
+        background: inherit;
+        padding: 3%;
+    }
+</style>
+
+<div class="d-flex justify-content-around">
+    <MatTooltip Tooltip="Build a New Reaction" Wrap="true" Position="@MatTooltipPosition.Top">
+        <NavLink class="btn" href="ReactionBuilder/0">
+            <i class="oi oi-plus colored-icon oi-align-center" />
+        </NavLink>
+    </MatTooltip>
+    <MatSlideToggle  Class="align-self-center" @bind-Value="@IsCardBodyVisable"></MatSlideToggle>
+</div>
+
+
+
+<div class="mt-3 row">
+
+
+    @if (Reactions == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+
+    @foreach (var reac in Reactions)
+    {
+        <div class="col-lg-4 col-md-6 col-sm-12 mt-2">
+            <ReactionCard reaction="reac" Call_ReInitialize_From_ReacionCardPanel="@DeleteThisReaction" TriggerID="@TriggerID" />
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public List<Reaction> Reactions { set; get; }
+
+    [Parameter]
+    public long TriggerID { set; get; }
+
+    public int tabIndex;
+
+
+    private bool IsCardBodyVisable = true;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+            Reactions = new List<Reaction>();
+            Reactions = await Http.GetFromJsonAsync<List<Reaction>>("api/Reactions");
+
+
+    }
+
+    public void DeleteThisReaction(Reaction reaction)
+    {
+
+        Reactions.Remove(reaction);
+
+    }
+
+    public void 
+        
+        
+        ThisReaction(Reaction reaction)
+    {
+        Reactions.Add(reaction);
+    }
+
+
+}

@@ -1,0 +1,69 @@
+﻿@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@page "/KnowladgeDataBase"
+@using MatBlazor
+
+
+<style>
+
+    .CardContent {
+        display: @(IsCardBodyVisable ? "block" : "none" );
+        cursor:auto;
+    }
+
+</style>
+
+<div class="d-flex justify-content-around">
+    <MatTooltip Tooltip="Add new Trigger" Wrap="true" Position="@MatTooltipPosition.Top">
+        <AddNewTrigger CallReInitializeFromKnowladgeDataBase="OnInitializedAsync" />
+     </MatTooltip>
+        <MatSlideToggle Class="align-self-center" @bind-Value="@IsCardBodyVisable"></MatSlideToggle>
+</div>
+
+    <div class="d-flex justify-content-md-around flex-wrap mt-3">
+
+
+        @if (AllTriggers == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+
+        @foreach (Trigger Trig in AllTriggers)
+        {
+            <div class="m-2">
+                <TriggerCard trigger="@Trig" DeleteThisTrigger="DeleteThisTrigger"  />
+            </div>
+        }
+
+    </div>
+
+
+@code
+{
+
+
+    private bool IsCardBodyVisable = true;
+
+    public List<Trigger> AllTriggers { set; get; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+            AllTriggers = new List<Trigger>();
+            AllTriggers = await Http.GetFromJsonAsync<List<Trigger>>("api/Triggers");
+       
+    }
+
+    public void DeleteThisTrigger(Trigger trigger)
+    {
+        AllTriggers.Remove(trigger);
+        StateHasChanged();
+    }
+
+    //public void AddThisTrigger(Trigger trigger)
+    //{
+    //    AllTriggers.Add(trigger);
+    //    StateHasChanged();
+}
+

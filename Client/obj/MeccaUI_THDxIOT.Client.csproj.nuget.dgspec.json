@@ -1,0 +1,172 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Client\\MeccaUI_THDxIOT.Client.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Client\\MeccaUI_THDxIOT.Client.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Client\\MeccaUI_THDxIOT.Client.csproj",
+        "projectName": "MeccaUI_THDxIOT.Client",
+        "projectPath": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Client\\MeccaUI_THDxIOT.Client.csproj",
+        "packagesPath": "C:\\Users\\OmarElkadi\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Client\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\OmarElkadi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.devexpress.com/GrJ2pf2HkZFOc3IgkJhwOjJYzTbQreuaqGXjXgerxBXqnDdfHc/api": {}
+        },
+        "frameworks": {
+          "netstandard2.1": {
+            "targetAlias": "netstandard2.1",
+            "projectReferences": {
+              "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\MeccaUI_THDxIOT.Shared.csproj": {
+                "projectPath": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\MeccaUI_THDxIOT.Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.1": {
+          "targetAlias": "netstandard2.1",
+          "dependencies": {
+            "MatBlazor": {
+              "target": "Package",
+              "version": "[2.6.0, )"
+            },
+            "Microsoft.AspNetCore.Components.WebAssembly": {
+              "target": "Package",
+              "version": "[3.2.0-rc1.20223.4, )"
+            },
+            "Microsoft.AspNetCore.Components.WebAssembly.Build": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[3.2.0-rc1.20223.4, )"
+            },
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[3.2.0-rc1.20223.4, )"
+            },
+            "Microsoft.AspNetCore.Http": {
+              "target": "Package",
+              "version": "[2.2.2, )"
+            },
+            "Microsoft.AspNetCore.SignalR": {
+              "target": "Package",
+              "version": "[1.1.0, )"
+            },
+            "Microsoft.AspNetCore.SignalR.Client": {
+              "target": "Package",
+              "version": "[3.1.5, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[3.1.5, )"
+            },
+            "System.Net.Http": {
+              "target": "Package",
+              "version": "[4.3.4, )"
+            },
+            "System.Net.Http.Json": {
+              "target": "Package",
+              "version": "[3.2.0-rc1.20217.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "NETStandard.Library": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\MeccaUI_THDxIOT.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\MeccaUI_THDxIOT.Shared.csproj",
+        "projectName": "MeccaUI_THDxIOT.Shared",
+        "projectPath": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\MeccaUI_THDxIOT.Shared.csproj",
+        "packagesPath": "C:\\Users\\OmarElkadi\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\OmarElkadi\\source\\repos\\MeccaUI_THDxIOT\\Shared\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\OmarElkadi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.devexpress.com/GrJ2pf2HkZFOc3IgkJhwOjJYzTbQreuaqGXjXgerxBXqnDdfHc/api": {}
+        },
+        "frameworks": {
+          "netstandard2.1": {
+            "targetAlias": "netstandard2.1",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.1": {
+          "targetAlias": "netstandard2.1",
+          "dependencies": {
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[4.7.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "NETStandard.Library": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

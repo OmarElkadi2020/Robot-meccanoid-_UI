@@ -1,0 +1,4 @@
+﻿<StaticWebAssets Version="1.0">
+  <ContentRoot BasePath="/" Path="C:\Users\OmarElkadi\source\repos\MeccaUI_THDxIOT\Client\bin\Debug\netstandard2.1\wwwroot\" />
+  <ContentRoot BasePath="_content/MatBlazor" Path="C:\Users\OmarElkadi\.nuget\packages\matblazor\2.6.0\build\..\staticwebassets\" />
+</StaticWebAssets>

@@ -1,0 +1,1305 @@
+﻿@page "/ReactionBuilder/{ReactionID:long}"
+
+@inject HttpClient Http
+@inject IMatToaster Toaster
+@inject NavigationManager NavigationManager
+
+<style>
+     #scene {
+            width: 400px;
+            height: 400px;
+            transform-style: preserve-3d;
+            transform: translateY(0px) rotateX( @(RotatAll_X)deg) rotateY( @(RotatAll_Y)deg) rotateZ( @(RotatAll_Z)deg) scale3d(0.8, 0.8, 0.8);
+            position:fixed;
+     }
+    #Arm-and-back-shoulder {
+        width: 180px;
+        height: 500px;
+        transform: rotateX( @(LeftArm_BackShoulder.RotationAngel)deg);
+        transform-origin: 50% 25px;
+        animation: RotateBackShoulder_LeftArm 10s infinite @(AnnimationState);
+    }
+
+    #back-shoulder {
+        width: 200px;
+        height: 50px;
+        transform: translateX(58px) scaleX(.3);
+    }
+
+        #Arm {
+            width: 180px;
+            height: 500px;
+            transform: rotateZ( @(LeftArm_SideShoulder.RotationAngel)deg);
+            transform-origin: 56% 24px;
+            animation: RotateSideShoulder_LeftArm 10s infinite @(AnnimationState);
+        }
+
+    #side-shoulder {
+        width: 200px;
+        height: 225px;
+    }
+
+        #side-shoulder-joint {
+            width: 200px;
+            height: 50px;
+            transform: rotateY(90deg) scale3d(0.25, 1, 1);
+        }
+
+    #side-shoulder-body {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 125px, 0px) rotateZ(90deg) /*Angle*/;
+        position: absolute;
+        z-index: -1;
+
+    }
+
+    #foreArm {
+        width: 200px;
+        height: 225px;
+        transform: rotateZ( @(LeftArm_ForeArm.RotationAngel)deg) translate3d(0px, 252px, 0px);
+        transform-origin: 50% 276px; /*Important*/
+        animation: RotateForeArm_LeftArm 10s linear 0s infinite @(AnnimationState);
+    }
+
+    #foreArm-joint {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 0px, 0px) scale3d(1, 1, .3) rotateY(90deg);
+    }
+
+    #foreArm-body {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 127px, 0px) rotateZ(90deg)
+
+    }
+
+    /*2.Arm*/
+
+    #Arm-and-back-shoulder2 {
+        width: 180px;
+        height: 500px;
+        transform: rotateX(@(RightArm_BackShoulder.RotationAngel)deg) scaleX(-1) translateX(-290px);
+        transform-origin: 50% 25px;
+        animation: RotateBackShoulder_RightArm 10s linear 0s infinite @(AnnimationState);
+    }
+
+    #back-shoulder2 {
+        width: 200px;
+        height: 50px;
+        transform: translateX(58px) scaleX(.3);
+    }
+
+    #Arm2 {
+        width: 180px;
+        height: 500px;
+        transform: rotateZ( @(RightArm_SideShoulder.RotationAngel)deg);
+        transform-origin: 56% 24px;
+        animation: RotateSideShoulder_RightArm 10s linear 0s infinite @(AnnimationState);
+    }
+
+    #side-shoulder2 {
+        width: 200px;
+        height: 225px;
+    }
+
+    #side-shoulder-joint2 {
+        width: 200px;
+        height: 50px;
+        transform: rotateY(90deg) scale3d(0.25, 1, 1);
+        /*animation: turnAround 30s linear 0s infinite alternate none running;*/
+    }
+
+    #side-shoulder-body2 {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 125px, 0px) rotateZ(90deg) /*Angle*/;
+        position: absolute;
+        z-index: -1;
+    }
+
+    #foreArm2 {
+        width: 200px;
+        height: 225px;
+        transform: rotateZ( @(RightArm_ForeArm.RotationAngel)deg) translate3d(0px, 252px, 0px);
+        transform-origin: 50% 276px; /*Important*/
+        animation: RotateForeArm_RightArm 10s linear 0s infinite @(AnnimationState);
+    }
+
+    #foreArm-joint2 {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 0px, 0px) scale3d(1, 1, .3) rotateY(90deg);
+        /*animation: turnAround 30s linear 0s infinite alternate none running;*/
+    }
+
+    #foreArm-body2 {
+        width: 200px;
+        height: 50px;
+        transform: translate3d(0px, 127px, 0px) rotateZ(90deg)
+        /*animation: turnAround 30s linear 0s infinite alternate none running;*/
+    }
+
+    #scene div[id] {
+        transform-style: preserve-3d;
+    }
+
+    #scene div {
+        box-sizing: content-box !important;
+        position: absolute;
+    }
+
+    .circle {
+        background-color: rgb(229, 251, 0);
+        width: 50px;
+        height: 50px;
+        border: 3px solid #6b03ff;
+        border-radius: 50px;
+    }
+
+        .top-circle {
+            transform: translateX(-29px) rotateY(90deg);
+            transform-style: preserve-3d;
+        }
+
+    .bottom-circle {
+        transform: translateX(177px) rotateY(-90deg);
+    }
+
+    .cylinder-cody{
+        width: 200px;
+        height: 50px;
+    }
+
+        .cylinder-cody> .face {
+            position: absolute;
+            width: 200px;
+            height: 50px;
+            background-color: black;
+            transform-style: preserve-3d;
+        }
+
+        .cylinder-cody > .face1 {
+            transform: rotateX(90deg);
+        }
+
+        .cylinder-cody > .face2 {
+            transform: rotateX(30deg);
+        }
+
+        .cylinder-cody > .face3 {
+            transform: rotateX(60deg);
+        }
+
+        .cylinder-cody > .face4 {
+            transform: rotateX(-90deg);
+        }
+
+        .cylinder-cody > .face5 {
+            transform: rotateX(-30deg);
+        }
+
+        .cylinder-cody > .face6 {
+            transform: rotateX(-60deg);
+        }
+
+    .face-thikness {
+        position: absolute;
+        width: 200px;
+        height: 4px;
+        background-color: rgb(229, 251, 0);
+        border-top: 2px solid rgb(229, 251, 0);
+        border-bottom: 2px solid rgb(229, 251, 0);
+    }
+
+    .face-thikness-bottom {
+        transform: translateY(-4px) rotateX(90deg);
+    }
+
+    .face-thikness-top {
+        transform: translateY(46px) rotateX(90deg);
+    }
+
+    @@keyframes RotateBackShoulder_LeftArm {
+        0% {
+            transform: rotateX(0deg);
+        }
+        10% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[0])deg);
+        }
+        20% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[1] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[0] : LeftArm_BackShoulder_RotationSteps_Array[1])deg);
+        }
+        30% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[2] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[1] : LeftArm_BackShoulder_RotationSteps_Array[2])deg);
+        }
+        40% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[3] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[2] : LeftArm_BackShoulder_RotationSteps_Array[3])deg);
+        }
+        50% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[4] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[3] : LeftArm_BackShoulder_RotationSteps_Array[4])deg);
+        }
+        60% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[5] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[4] : LeftArm_BackShoulder_RotationSteps_Array[5])deg);
+        }
+        70% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[6] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[5] : LeftArm_BackShoulder_RotationSteps_Array[6])deg);
+        }
+        80% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[7] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[6] : LeftArm_BackShoulder_RotationSteps_Array[7])deg);
+        }
+
+        90% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[8] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[7] : LeftArm_BackShoulder_RotationSteps_Array[8])deg);
+        }
+
+        100% {
+            transform: rotateX(@(LeftArm_BackShoulder_RotationSteps_Array[9] == 0 ?
+        LeftArm_BackShoulder_RotationSteps_Array[8] : LeftArm_BackShoulder_RotationSteps_Array[9])deg);
+        }
+    }
+    @@keyframes RotateSideShoulder_LeftArm {
+        0% {
+            transform: rotateZ(0deg);
+        }
+        10% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[0])deg);
+        }
+        20% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[1] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[0] : LeftArm_SideShoulder_RotationSteps_Array[1])deg);
+        }
+        30% {
+            transform: rotateZ( @(LeftArm_SideShoulder_RotationSteps_Array[2] == 0 ?
+       LeftArm_SideShoulder_RotationSteps_Array[1] : LeftArm_SideShoulder_RotationSteps_Array[2])deg);
+        }
+        40% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[3] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[2] : LeftArm_SideShoulder_RotationSteps_Array[3])deg);
+        }
+        50% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[4] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[3] : LeftArm_SideShoulder_RotationSteps_Array[4])deg);
+        }
+        60% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[5] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[4] : LeftArm_SideShoulder_RotationSteps_Array[5])deg);
+        }
+        70% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[6] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[5] : LeftArm_SideShoulder_RotationSteps_Array[6])deg);
+        }
+        80% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[7] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[6] : LeftArm_SideShoulder_RotationSteps_Array[7])deg);
+        }
+
+        90% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[8] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[7] : LeftArm_SideShoulder_RotationSteps_Array[8])deg);
+        }
+
+        100% {
+            transform: rotateZ(@(LeftArm_SideShoulder_RotationSteps_Array[9] == 0 ?
+        LeftArm_SideShoulder_RotationSteps_Array[8] : LeftArm_BackShoulder_RotationSteps_Array[9])deg);
+        }
+    }
+    @@keyframes RotateForeArm_LeftArm {
+        0% {
+            transform: rotateZ(0deg) translate3d(0px, 252px, 0px);
+        }
+        10% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[0])deg) translate3d(0px, 252px, 0px);
+        }
+        20% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[1] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[0] : LeftArm_ForeArm_RotationSteps_Array[1])deg) translate3d(0px, 252px, 0px);
+        }
+        30% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[2] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[1] : LeftArm_ForeArm_RotationSteps_Array[2])deg) translate3d(0px, 252px, 0px);
+        }
+        40% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[3] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[2] : LeftArm_ForeArm_RotationSteps_Array[3])deg) translate3d(0px, 252px, 0px);
+        }
+        50% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[4] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[3] : LeftArm_ForeArm_RotationSteps_Array[4])deg) translate3d(0px, 252px, 0px);
+        }
+        60% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[5] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[4] : LeftArm_ForeArm_RotationSteps_Array[5])deg) translate3d(0px, 252px, 0px);
+        }
+        70% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[6] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[5] : LeftArm_ForeArm_RotationSteps_Array[6])deg) translate3d(0px, 252px, 0px);
+        }
+        80% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[7] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[6] : LeftArm_ForeArm_RotationSteps_Array[7])deg) translate3d(0px, 252px, 0px);
+        }
+
+        90% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[8] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[7] : LeftArm_ForeArm_RotationSteps_Array[8])deg) translate3d(0px, 252px, 0px);
+        }
+
+        100% {
+            transform: rotateZ( @(LeftArm_ForeArm_RotationSteps_Array[9] == 0 ?
+       LeftArm_ForeArm_RotationSteps_Array[8] : LeftArm_BackShoulder_RotationSteps_Array[9])deg) translate3d(0px, 252px, 0px);
+        }
+    }
+
+    @@keyframes RotateBackShoulder_RightArm {
+        0% {
+            transform: rotateX(0deg) scaleX(-1) translateX(-290px);
+        }
+
+            10% {
+                transform: rotateX(@(RightArm_BackShoulder_RotationSteps_Array[0])deg) scaleX(-1) translateX(-290px);
+            }
+
+        20% {
+            transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[1] == 0 ?
+       RightArm_BackShoulder_RotationSteps_Array[0] : RightArm_BackShoulder_RotationSteps_Array[1])deg)scaleX(-1) translateX(-290px);
+        }
+
+        30% {
+            transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[2] == 0 ?
+       RightArm_BackShoulder_RotationSteps_Array[1] : RightArm_BackShoulder_RotationSteps_Array[2])deg) scaleX(-1) translateX(-290px);
+        }
+
+        40% {
+            transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[3] == 0 ?
+       RightArm_BackShoulder_RotationSteps_Array[2] : RightArm_BackShoulder_RotationSteps_Array[3])deg)scaleX(-1) translateX(-290px);
+        }
+
+        50% {
+            transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[4] == 0 ?
+       RightArm_BackShoulder_RotationSteps_Array[3] : RightArm_BackShoulder_RotationSteps_Array[4])deg)scaleX(-1) translateX(-290px);
+        }
+
+            60% {
+                transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[5] == 0 ?
+   RightArm_BackShoulder_RotationSteps_Array[4] : RightArm_BackShoulder_RotationSteps_Array[5])deg) scaleX(-1) translateX(-290px);
+            }
+
+            70% {
+                transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[6] == 0 ?
+   RightArm_BackShoulder_RotationSteps_Array[5] : RightArm_BackShoulder_RotationSteps_Array[6])deg)scaleX(-1) translateX(-290px);
+            }
+
+            80% {
+                transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[7] == 0 ?
+   RightArm_BackShoulder_RotationSteps_Array[6] : RightArm_BackShoulder_RotationSteps_Array[7])deg)scaleX(-1) translateX(-290px);
+            }
+
+            90% {
+                transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[8] == 0 ?
+   RightArm_BackShoulder_RotationSteps_Array[7] : RightArm_BackShoulder_RotationSteps_Array[8])deg)scaleX(-1) translateX(-290px);
+            }
+
+            100% {
+                transform: rotateX( @(RightArm_BackShoulder_RotationSteps_Array[9] == 0 ?
+   RightArm_BackShoulder_RotationSteps_Array[8] : RightArm_BackShoulder_RotationSteps_Array[9])deg)scaleX(-1) translateX(-290px);
+            }
+        }
+    @@keyframes RotateSideShoulder_RightArm {
+            0% {
+                transform: rotateZ(0deg);
+            }
+
+            10% {
+                transform: rotateZ(@(RightArm_SideShoulder_RotationSteps_Array[0])deg);
+            }
+
+            20% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[1] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[0] : RightArm_SideShoulder_RotationSteps_Array[1])deg);
+            }
+
+            30% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[2] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[1] : RightArm_SideShoulder_RotationSteps_Array[2])deg);
+            }
+
+            40% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[3] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[2] : RightArm_SideShoulder_RotationSteps_Array[3])deg);
+            }
+
+            50% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[4] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[3] : RightArm_SideShoulder_RotationSteps_Array[4])deg);
+            }
+
+            60% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[5] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[4] : RightArm_SideShoulder_RotationSteps_Array[5])deg);
+            }
+
+            70% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[6] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[5] : RightArm_SideShoulder_RotationSteps_Array[6])deg);
+            }
+
+            80% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[7] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[6] : RightArm_SideShoulder_RotationSteps_Array[7])deg);
+            }
+
+            90% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[8] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[7] : RightArm_SideShoulder_RotationSteps_Array[8])deg);
+            }
+
+            100% {
+                transform: rotateZ( @(RightArm_SideShoulder_RotationSteps_Array[9] == 0 ?
+   RightArm_SideShoulder_RotationSteps_Array[8] : RightArm_BackShoulder_RotationSteps_Array[9])deg);
+            }
+        }
+    @@keyframes RotateForeArm_RightArm {
+        0% {
+            transform: rotateZ(0deg) translate3d(0px, 252px, 0px);
+        }
+        10% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[0])deg) translate3d(0px, 252px, 0px);
+        }
+        20% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[1] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[0] : RightArm_ForeArm_RotationSteps_Array[1])deg) translate3d(0px, 252px, 0px);
+        }
+        30% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[2] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[1] : RightArm_ForeArm_RotationSteps_Array[2])deg) translate3d(0px, 252px, 0px);
+        }
+        40% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[3] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[2] : RightArm_ForeArm_RotationSteps_Array[3])deg) translate3d(0px, 252px, 0px);
+        }
+        50% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[4] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[3] : RightArm_ForeArm_RotationSteps_Array[4])deg) translate3d(0px, 252px, 0px);
+        }
+        60% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[5] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[4] : RightArm_ForeArm_RotationSteps_Array[5])deg) translate3d(0px, 252px, 0px);
+        }
+        70% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[6] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[5] : RightArm_ForeArm_RotationSteps_Array[6])deg) translate3d(0px, 252px, 0px);
+        }
+        80% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[7] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[6] : RightArm_ForeArm_RotationSteps_Array[7])deg) translate3d(0px, 252px, 0px);
+        }
+
+        90% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[8] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[7] : RightArm_ForeArm_RotationSteps_Array[8])deg) translate3d(0px, 252px, 0px);
+        }
+
+        100% {
+            transform: rotateZ( @(RightArm_ForeArm_RotationSteps_Array[9] == 0 ?
+       RightArm_ForeArm_RotationSteps_Array[8] : RightArm_BackShoulder_RotationSteps_Array[9])deg) translate3d(0px, 252px, 0px);
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!---Robot Body-->
+    <div class="col col-md-6 ">
+        <div id="scene">
+            <div id="Arm-and-back-shoulder">
+                <div id="back-shoulder">
+
+                    <div class="cylinder-cody">
+                        <div class="top-circle circle"></div>
+
+                        <div class=" face face0">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face1">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+
+                        <div class=" face face2">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+
+                        <div class=" face face3">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face4">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face5">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face6">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                    </div>
+                    <div class="bottom-circle circle"></div>
+                </div>
+                <div id="Arm">
+                    <div id="side-shoulder">
+
+                        <div id="side-shoulder-joint">
+
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle">
+                            </div>
+                        </div>
+                        <div id="side-shoulder-body">
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                    </div>
+                    <div id="foreArm">
+                        <div id="foreArm-joint">
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                        <div id="foreArm-body">
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="Arm-and-back-shoulder2">
+                <div id="back-shoulder2">
+                    <div class="top-circle circle"></div>
+                    <div class="cylinder-cody">
+                        <div class=" face face0">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face1">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face2">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face3">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face4">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face5">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                        <div class=" face face6">
+                            <div class="face-thikness face-thikness-top"></div>
+                            <div class="face-thikness face-thikness-bottom"></div>
+                        </div>
+                    </div>
+                    <div class="bottom-circle circle"></div>
+                </div>
+                <div id="Arm2">
+                    <div id="side-shoulder2">
+                        <div id="side-shoulder-joint2">
+
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top"></div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle">
+                            </div>
+                        </div>
+                        <div id="side-shoulder-body2">
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                    </div>
+                    <div id="foreArm2">
+                        <div id="foreArm-joint2">
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                        <div id="foreArm-body2">
+                            <div class="top-circle circle"></div>
+                            <div class="cylinder-cody">
+
+                                <div class=" face face0">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face1">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face2">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div>
+                                    <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+
+                                <div class=" face face3">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face4">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face5">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                                <div class=" face face6">
+                                    <div class="face-thikness face-thikness-top">
+                                    </div> <div class="face-thikness face-thikness-bottom"></div>
+                                </div>
+                            </div>
+                            <div class="bottom-circle circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!---animator controller-->
+    <div id="controls" class="col-md-6">
+        <div class="row">
+            <div class="col-sm-6 ">
+                <h4>
+                    Left Arm
+                </h4>
+                <br />
+
+                <div class="border border-dark">
+
+                    <label>Back Shoulder Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-60°</span> <span class="text-center">@LeftArm_BackShoulder.RotationAngel °</span>  <span class="text-right">180°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="LeftArm_BackShoulder.RotationAngel"
+                               ValueMin="-60" ValueMax="180" @oninput="@StateHasChanged" />
+
+                    <label>Side Shoulder Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-60°</span> <span class="text-center">@LeftArm_SideShoulder.RotationAngel °</span> <span class="text-right">120°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="LeftArm_SideShoulder.RotationAngel"
+                               ValueMin="-60" ValueMax="120" @oninput="@StateHasChanged" />
+
+                    <label>Forearm Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-60°</span> <span class="text-center">@LeftArm_ForeArm.RotationAngel °</span>  <span class="text-right">180°</span>
+                    </div>
+                    <MatSlider Discrete="true" @bind-Value="LeftArm_ForeArm.RotationAngel"
+                               ValueMin="-120" ValueMax="120" @oninput="@StateHasChanged" />
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <h4>
+                    Right Arm
+                </h4>   <br />
+                <div class="border border-dark">
+                    <label>Back Shoulder Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-60°</span> <span class="text-center">@RightArm_BackShoulder.RotationAngel °</span>  <span class="text-right">180°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RightArm_BackShoulder.RotationAngel"
+                               ValueMin="-60" ValueMax="180"/>
+
+                    <label>Side Shoulder Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-60°</span><span class="text-center">@RightArm_SideShoulder.RotationAngel °</span>  <span class="text-right">120°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RightArm_SideShoulder.RotationAngel"
+                               ValueMin="-60" ValueMax="120" />
+
+                    <label>Forearm Routation Angle</label>
+                    <div class="d-flex justify-content-between">
+                        <span>-120°</span>  <span class="text-center">@RightArm_ForeArm.RotationAngel °</span>  <span class="text-right">120°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RightArm_ForeArm.RotationAngel"
+                               ValueMin="-120" ValueMax="120"  />
+                </div>
+            </div>
+            <div class=" col-sm-6 mt-3">
+                <h4>3D-Rotation</h4><br />
+                <div class="border border-dark">
+                    X-Axis Rotation Angle
+                    <div class="d-flex justify-content-between">
+                        <span>-90°</span>  <span class="text-right">90°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RotatAll_X"
+                               ValueMin="-90" ValueMax="90" />
+                    Y-Axis Rotation Angle
+                    <div class="d-flex justify-content-between">
+                        <span>-90°</span>  <span class="text-right">90°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RotatAll_Y"
+                               ValueMin="-90" ValueMax="90" />
+                    Z-Axis Rotation Angle
+                    <div class="d-flex justify-content-between">
+                        <span>-90°</span>  <span class="text-right">90°</span>
+                    </div>
+                    <MatSlider EnableStep="true" Step="3" Discrete="true" @bind-Value="RotatAll_Z"
+                               ValueMin="-90" ValueMax="90"/>
+                </div>
+            </div>
+            <div class="col-sm-6 align-content-center">
+                <div class="row mt-5" style="margin-top:60%">
+                    <div class="col-6">
+                        <button class="btn  m-2 btn-full-width" type="button" @onclick="Switch">
+                            @(AnnimationState!="running" ? "Animate":"Stop")
+                        </button>
+                    </div>
+                    @if (reaction.ReactionID == 0)
+                    {
+                        <div class="col-12">
+                            <div class="my-1">
+                                <MatTextField @bind-Value="ReactionStep.TextToSpeak" Label="Text To Speak" FullWidth="true"></MatTextField>
+                            </div>
+                        </div>
+                        @if (AnnimationState != "running")
+                        {
+                            <div class="col-6">
+                                <button class="btn m-2 btn-full-width" type="button" @onclick="Capture">Capture</button>
+                            </div>
+                        }
+
+                        <div class="col-6">
+                            <button class="btn  m-2 btn-full-width" type="button" @onclick="Reset">Reset</button>
+                        </div>
+                        <div class="col-12">
+                            <!--Inputs-->
+                            <EditForm OnValidSubmit="save" Model="reaction">
+                                <div class="my-2  mx-2">
+                                    <MatTextField @bind-Value="reaction.ReactionName" Label="Reaction Name" FullWidth="true" Required="true"></MatTextField>
+                                </div>
+                                <div class="my-2 mx-4 bg-inhert">
+                                    <MatSelectItem @bind-Value="reaction.EmotionalCondition" Items="EmotionalCondition" Label="Emotional Condition" Enhanced="true"></MatSelectItem>
+                                </div>
+                                <button class="btn  m-2 btn-full-width w-100" type="submit">Save</button>
+                            </EditForm>
+                        </div>
+                    }
+                    <div class="col-6">
+                    </div>
+                </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+
+@*<ReactionDialog dialogIsOpen="@DialogIsOpen" reaction="@reaction" CloseNewReactionDialog="@CloseDialog" />*@
+
+@code
+{
+    //propereties
+
+    string[] EmotionalCondition = new[]
+        {
+            "Happy",
+            "Sad",
+            null,
+        };
+
+    string AnnimationState = "Capturing";
+
+    int RotatAll_X = 0;
+    int RotatAll_Y = 20;
+    int RotatAll_Z = 0;
+
+    int[] LeftArm_BackShoulder_RotationSteps_Array;
+    int[] LeftArm_SideShoulder_RotationSteps_Array;
+    int[] LeftArm_ForeArm_RotationSteps_Array;
+
+    int[] RightArm_BackShoulder_RotationSteps_Array;
+    int[] RightArm_SideShoulder_RotationSteps_Array;
+    int[] RightArm_ForeArm_RotationSteps_Array;
+
+    [Parameter]
+    public long ReactionID { get; set; }
+
+    public Reaction reaction { get; set; }
+    public ReactionStep ReactionStep { get; set; } = new ReactionStep();
+    public LinkedList<MotorState> movement { get; set; } = new LinkedList<MotorState>();
+    private string TextToSpeak { get; set; }
+    private byte StepOrder { get; set; } = 0;
+    private MotorState LeftArm_BackShoulder { set; get; }
+    private MotorState LeftArm_SideShoulder { set; get; }
+    private MotorState LeftArm_ForeArm { set; get; }
+    private MotorState RightArm_BackShoulder { set; get; }
+    private MotorState RightArm_SideShoulder { set; get; }
+    private MotorState RightArm_ForeArm { set; get; }
+
+    protected async override Task OnInitializedAsync()
+    {
+
+
+        ConfigureTostar();
+
+        InitializeGlobalVariables();
+
+        //Edit Reaction already in the DB
+        if (ReactionID != 0)
+        {
+            reaction = await GetTheReaction();
+
+            foreach (var step in reaction.ReactionSteps)
+            {
+                LeftArm_BackShoulder_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.BackShoulder_LA).First().RotationAngel;
+
+                LeftArm_SideShoulder_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.SideShoulder_LA).First().RotationAngel;
+
+
+                LeftArm_ForeArm_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.ForeArm_LA).First().RotationAngel;
+
+                RightArm_BackShoulder_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.BackShoulder_RA).First().RotationAngel;
+
+                RightArm_SideShoulder_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.SideShoulder_RA).First().RotationAngel;
+
+                RightArm_ForeArm_RotationSteps_Array[StepOrder] =
+                                    step.Movement.Where(m => m.Motor == Motor.ForeArm_RA).First().RotationAngel;
+                StepOrder++;
+
+            }
+
+        }
+
+
+        Console.WriteLine("reactionID: " + reaction.ReactionID);
+
+
+    }
+
+
+
+    void Capture()
+    {
+
+
+        movement = new LinkedList<MotorState>();
+
+        int index = LeftArm_BackShoulder_RotationSteps_Array.IndexOf(0);
+        if (index > 10)
+        {
+            Toaster.Add("No You Cannot add movements anymore", MatToastType.Warning, "Max length", "Warning", config => config.RequireInteraction = true);
+            return;
+        }
+
+        LeftArm_BackShoulder_RotationSteps_Array[index] = LeftArm_BackShoulder.RotationAngel + 1;
+
+
+        LeftArm_SideShoulder_RotationSteps_Array[index] = LeftArm_SideShoulder.RotationAngel + 1;
+
+        LeftArm_ForeArm_RotationSteps_Array[index] = LeftArm_ForeArm.RotationAngel + 1;
+
+
+
+        RightArm_BackShoulder_RotationSteps_Array[index] = RightArm_BackShoulder.RotationAngel + 1;
+
+        RightArm_SideShoulder_RotationSteps_Array[index] = RightArm_SideShoulder.RotationAngel + 1;
+
+
+        RightArm_ForeArm_RotationSteps_Array[index] = RightArm_ForeArm.RotationAngel + 1;
+
+
+
+        movement.AddLast(new MotorState(LeftArm_BackShoulder.Motor, LeftArm_BackShoulder.RotationAngel));
+        movement.AddLast(new MotorState(LeftArm_SideShoulder.Motor, LeftArm_SideShoulder.RotationAngel));
+        movement.AddLast(new MotorState(LeftArm_ForeArm.Motor, LeftArm_ForeArm.RotationAngel));
+        movement.AddLast(new MotorState(RightArm_BackShoulder.Motor, RightArm_BackShoulder.RotationAngel));
+        movement.AddLast(new MotorState(RightArm_SideShoulder.Motor, RightArm_SideShoulder.RotationAngel));
+        movement.AddLast(new MotorState(RightArm_ForeArm.Motor, RightArm_ForeArm.RotationAngel));
+
+        ReactionStep = new ReactionStep(movement, ReactionStep.TextToSpeak, StepOrder);
+
+        StepOrder++;
+        reaction.ReactionSteps.AddLast(ReactionStep);
+
+        ReactionStep.TextToSpeak = null;
+
+        Toaster.Add($"Captured! Click Animate to Review", MatToastType.Primary, "Successed", "thumb_up");
+
+    }
+
+    void Switch()
+    {
+        if (AnnimationState == "running") {
+            AnnimationState = "Capturing";
+            Toaster.Clear();
+            Toaster.Add("Click Animate to start Animation mode", MatToastType.Info, "Capturing Mode", "", config =>
+            {
+
+                config.RequireInteraction = true; config.ShowProgressBar = false; config.ShowCloseButton = false;
+            });
+        }
+        else {
+            AnnimationState = "running";
+            Toaster.Clear();
+            Toaster.Add("Click Stop to Back to Capturing mode", MatToastType.Info, "Animation Mode", "", config => {
+
+                config.RequireInteraction = true; config.ShowProgressBar = false; config.ShowCloseButton = false;
+            });
+        }
+    }
+
+    void Reset()
+    {
+        Array.Clear(LeftArm_BackShoulder_RotationSteps_Array, 0, LeftArm_BackShoulder_RotationSteps_Array.Length);
+        Array.Clear(LeftArm_SideShoulder_RotationSteps_Array, 0, LeftArm_SideShoulder_RotationSteps_Array.Length);
+        Array.Clear(LeftArm_ForeArm_RotationSteps_Array, 0, LeftArm_ForeArm_RotationSteps_Array.Length);
+
+        Array.Clear(RightArm_BackShoulder_RotationSteps_Array, 0, RightArm_BackShoulder_RotationSteps_Array.Length);
+        Array.Clear(RightArm_SideShoulder_RotationSteps_Array, 0, RightArm_SideShoulder_RotationSteps_Array.Length);
+        Array.Clear(RightArm_ForeArm_RotationSteps_Array, 0, RightArm_ForeArm_RotationSteps_Array.Length);
+
+        LeftArm_BackShoulder.RotationAngel = 0;
+        LeftArm_SideShoulder.RotationAngel = 0;
+        LeftArm_ForeArm.RotationAngel = 0;
+        RightArm_BackShoulder.RotationAngel = 0;
+        RightArm_SideShoulder.RotationAngel = 0;
+        RightArm_ForeArm.RotationAngel = 0;
+    }
+
+    private async Task save()
+    {
+
+        //if (reaction.ReactionID != 0) //Edit
+        //{
+        //    var ID = reaction.ReactionID;
+        //    var res = await Http.PutAsJsonAsync($"api/Reactions/{ID}", reaction);
+        //    if (res.IsSuccessStatusCode)
+        //        Toaster.Add($"The Reaction \"{reaction.ReactionName}\" has been updated Successfully", MatToastType.Info, "Successed", "thumb_up");
+        //}
+        //Create new
+
+        var res = await Http.PostAsJsonAsync($"api/Reactions", reaction);
+        if (res.IsSuccessStatusCode)
+            Toaster.Add($"New Reaction \"{reaction.ReactionName}\" has been created Successfully", MatToastType.Success, "Successed", "thumb_up");
+
+
+        NavigationManager.NavigateTo("Reactions");
+    }
+}
+
+
+
+@code{
+    void ConfigureTostar()
+    {
+        Toaster.Configuration.ShowProgressBar = true;
+        Toaster.Configuration.ShowCloseButton = true;
+        Toaster.Configuration.MaximumOpacity = 100;
+        Toaster.Configuration.ShowTransitionDuration = 500; ;
+        Toaster.Configuration.VisibleStateDuration = 7000;
+        Toaster.Configuration.HideTransitionDuration = 500;
+        Toaster.Configuration.RequireInteraction = false;
+        Toaster.Configuration.MaxDisplayedToasts = 2;
+    }
+
+    void InitializeGlobalVariables()
+    {
+        LeftArm_BackShoulder_RotationSteps_Array = new int[11];
+        LeftArm_SideShoulder_RotationSteps_Array = new int[11];
+        LeftArm_ForeArm_RotationSteps_Array = new int[11];
+        RightArm_BackShoulder_RotationSteps_Array = new int[11];
+        RightArm_SideShoulder_RotationSteps_Array = new int[11];
+        RightArm_ForeArm_RotationSteps_Array = new int[11];
+
+        LeftArm_BackShoulder = new MotorState(Motor.BackShoulder_LA);
+        LeftArm_SideShoulder = new MotorState(Motor.SideShoulder_LA);
+        LeftArm_ForeArm = new MotorState(Motor.ForeArm_LA);
+        RightArm_BackShoulder = new MotorState(Motor.BackShoulder_RA);
+        RightArm_SideShoulder = new MotorState(Motor.SideShoulder_RA);
+        RightArm_ForeArm = new MotorState(Motor.ForeArm_RA);
+
+        reaction = new Reaction();
+    }
+
+    async Task<Reaction> GetTheReaction()
+    {
+        return await Http.GetFromJsonAsync<Reaction>($"api/Reactions/{ReactionID}");
+    }
+}
